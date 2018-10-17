@@ -1,0 +1,106 @@
+Problem Statement:
+----------------------------------------------------------------------------------------------------
+Input:  A file containing at most n positive integers, each less than n, where n = 10^7
+        (ie. at most 10,000,000 positive integers in the range 0 - 9999999 (telephone numbers)).
+        It is a fatal error if any integer occurrs twice in the input.  No other data is associated
+        with the integer.
+
+Output: A sorted list in increasing order of the input integers.
+
+Constraints:  At most (roughly) a megabyte of storage is available in main memory; ample disk
+              storage is available.  The runtime can be at most several minutes;  a run time of ten
+              seconds need not be decreased.
+
+
+Data:
+----------------------------------------------------------------------------------------------------
+vector:  A uint slice containing m uint values, representing a bit vector.  Since n = 10^7,
+         m = n / sizeof(uint) = 156250.
+
+
+Functions/Methods:
+----------------------------------------------------------------------------------------------------
+New will take as input the number of bits n needed in the vector, and will return a zero value slice
+of m uint's to house n bits.
+New
+If n < 0
+  Return error
+Base slice size is n / sizeof(uint)
+If n % sizeof(uint) != 0
+  Increment slize size by 1
+Return a zero-value slice of the correct size.
+
+MaxBits will return the maximum number of bits representable in the vector.
+MaxBits
+Maximum bit is len(v) * sizeof(uint) - 1
+
+SetBit will take a bit number n, and will try to set the n'th global bit within the vector.  If the
+n'th bit is already set, we have a duplicate, which will return an error to the caller.  If the nth
+bit falls outside the size of the vector, an error will be returned.  Otherwise, success is returned.
+SetBit
+set, err = TestBit(n)
+If err
+  Return a composite error
+If set
+  Return a composite error
+vectorIndex = n / sizeof(uint)
+bitToSet = n - (vectorIndex * sizeof(uint))
+vector[vectorIndex] |= 1 << bitToSet
+Return success
+
+TestBit will take a bit number n, and will return a boolean and error.  The boolean indicates if the
+n'th global bit within the vector is already set, while the error indicates if n falls outside the
+size of the vector.
+TestBit
+vectorIndex = n / sizeof(uint)
+If vectorIndex > len(vector) - 1
+  Return false and error, outside vector range
+bitToTest = n - (vectorIndex * sizeof(uint))
+If vector[vectorIndex] & 1 << bitToTest > 0
+  Return true and nil
+Else
+  Return false and nil
+
+PopulateVecFromFile will take a filename, a Vector, and read one unsigned integer value per line,
+checking the value against the range.  If a value is valid, SetBit will be invoked.  If a failure
+in reading occurrs, or if a value falls outside the specified range, or if SetBit fails, ReadFile
+will immediately return an error to the caller.  Otherwise, success will be returned.
+ReadFile
+Open(filename)
+If failure to open
+  Return failure
+For line in file
+  Convert line to unsigned integer
+  If SetBit returns an error
+    Return composite error
+Return success
+
+WriteVecToFile will take a filename, and will write the contents of the vector (from least to greatest)
+to the output file, one value per line.  An error will be returned on any write failures, otherwise
+success will be returned.
+WriteFile
+Open(filename)
+If failure to open
+  Return failure
+for i = [0, len(vector) - 1]
+  for j = [0, 63]
+    set, err = TestBit(j)
+    If set
+      Write j to file
+      Return error if failure to write
+return success
+
+
+Implementation:
+----------------------------------------------------------------------------------------------------
+See files under ./vectorsort for final implementation.  Comments/design may differ.
+
+Run:
+----------------------------------------------------------------------------------------------------
+# Build.
+cd vectorsort && go clean && go build
+# Generate input file.  Yea, it's silly input.
+for i in {9999999..8999999}; do echo $i >>input.txt; done
+# Run.
+./vectorsort
+# Examine ./output.txt

@@ -1,0 +1,95 @@
+Problem Statement:
+----------------------------------------------------------------------------------------------------
+Input:  N denoting an upper integer bound (not including N) and K denoting the number of integers in
+the range 0 to N-1.
+
+Output:  K "random" integers in the range 0 to N-1, written to a file, one value per line.
+
+Constraints:  Time efficiency.  Memory is not a constraint.
+
+The simplest approach would be to use a system/language provided random number library, but then this
+problem would basically be a NOP.  Thus, let's approach it as if we have no such library and need to
+write out own.
+
+Look into random/prototype/main.go for various approaches.  So far the fastest is a combination of
+randomized timestamps (nanoseconds) and a simple hashing function obtained from
+https://crypto.stackexchange.com/questions/16219/cryptographic-hash-function-for-32-bit-length-input-keys
+
+
+Data:
+----------------------------------------------------------------------------------------------------
+A set 'rans' of size K, implemented using a hash map of size K.  The key will be the 'random' integer,
+the value will be true once that key is in place.
+
+A mutex guarding access to the 'rans' hash.
+
+A desired number of unique values added to the 'rans' hash.
+
+struct rans
+  . hash of unsigned integers to struct{}'s
+  . mutex
+  . quantity of random numbers desired
+
+
+Functions/Methods:
+----------------------------------------------------------------------------------------------------
+rand returns a failry random number using the nanosecond portion of a timestamp, and the hashing
+algorithm mentioned in
+https://crypto.stackexchange.com/questions/16219/cryptographic-hash-function-for-32-bit-length-input-keys
+rand
+ts = take a timestamp
+nano = nanosecond portion of ts
+for i = [0, 12)
+  nano = ((nano>>8)^nano)*0x6b + i
+return nano
+
+genRand takes the 'rans' struct and a scaling factor.  genRand will then loop, obtain a random number,
+scale the number using a left shift, and try to add the number to 'rans'.  If the number is not already
+present, it will decrement the counter of desired values in 'rans' and repeat.  If the counter of
+desired values in 'rans' reaches 0, genRand will exit with success.
+genRand
+While
+  Obtain random number.
+  Scale the number and check to ensure it stays within bounds.
+  Lock 'rans'
+    If number of values left to obtain == 0
+      Signal finished and terminate, unlocking 'rans'
+    
+    Try to add the number to 'rans'.
+    If successfully added.
+      Decrement number of values left to obtain.
+  Unlock 'rans'
+  
+
+main parses command line input to obtain the upper bound for random numbers, the quantity of random
+numbers to generate and the output filename.  A 'rans' struct is instantiated, a scaling factor is
+computed based on the upper bound, and the number of workers are computed and started, generating
+random numbers and adding them to 'rans'.  main waits until all workers have finished, and writes out
+the contents of 'rans', one value per line, to the output file.
+main
+Obtain upper bound.
+Obtain quantity of random numbers to generate.
+Obtain output file.
+Compute number of workers.
+Initialize 'rans' struct with a hash of unsigned integers to structs{}, a mutex, and a counter.
+Determine scale factor by right shifting maximum uint, until it is <= the upper bound
+  NOTE: because we're using a right shift, (divide by 2), unless the bound is a power of 2, we'll
+        actually end up with a lower actual bound.
+Spool up workers, passing the 'rans' hash and the scaling factor.
+Wait for workers to finish.
+Write 'rans' to output file, one per line.
+
+
+Implementation Notes:
+----------------------------------------------------------------------------------------------------
+See random/main.go for final implementation and comments.
+
+
+Run/Test:
+----------------------------------------------------------------------------------------------------
+# Build.
+cd random && go clean && go build
+# See help for details
+./random -h
+# Example
+./random -out output.txt 1000000

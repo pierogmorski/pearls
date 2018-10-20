@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"pearls/col1/vectorsort/vector"
@@ -85,20 +86,26 @@ func WriteVecToFile(filename string, vec *vector.Vector) error {
 func main() {
 	start := time.Now()
 
-	inFile := "./input.txt"
-	outFile := "./output.txt"
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	inFile := flag.String("in", "./input.txt", "input filename")
+	outFile := flag.String("out", "./output.txt", "output filename")
+	flag.Parse()
+
 	var maxVals uint = 10000000
 	vec := vector.New(maxVals)
 
 	// Read inFile and populate the vector.  Any failure is treated as fatal.
-	numEntries, err := PopulateVecFromFile(inFile, vec)
+	numEntries, err := PopulateVecFromFile(*inFile, vec)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "fatal: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Write vector out in increasing order to outFile .  Any failure is treated as fatal.
-	if err := WriteVecToFile(outFile, vec); err != nil {
+	if err := WriteVecToFile(*outFile, vec); err != nil {
 		fmt.Fprintf(os.Stderr, "fatal: %v\n", err)
 		os.Exit(1)
 	}

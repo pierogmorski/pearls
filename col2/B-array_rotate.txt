@@ -1,0 +1,71 @@
+Problem Statement:
+----------------------------------------------------------------------------------------------------
+Input:  One dimensional vector/array of n elements, a number i, and an optional flag to rotate right
+        (default is left).
+Output:  The original array rotated i positions to the left or right.
+Constraints:  Use only a few extra bytes of memory beyond memory needed to store array.
+
+There is a nice trick to do this in place, with 3 passes over the array.
+
+For a left rotation of an array a[n]:
+  reverse a[0 : i-1]
+  reverse a[i : n-1]
+  reverse a
+
+For a right rotation of an array a[n]
+  reverse a
+  reverse a[0 : i-1]
+  reverse a[i : n-1]
+
+
+Data:
+----------------------------------------------------------------------------------------------------
+sliceStr: A string taken from the command line, from which to form a slice.
+slice:    A slice of runes formed from sliceStr
+rotPos:   The number of positions to rotate the slice (default to the left).
+right:    A command line flag indicating the rotation should happen to the right.
+
+
+Functions/Methods:
+----------------------------------------------------------------------------------------------------
+reverse takes a slice of runes, and a range (i and j) and reverses slice[i : j].
+reverse
+If i >= j
+  No reverse to perform.
+For i < j
+  Swap slice[i] with slice[j]
+  i++
+  j--
+
+rotate takes a slice of runes, a boolean right direction (default is left), and the number of
+positions to rotate the slice in place.
+rotate
+If i > len(slice), treat it as i/len(slice) full rotations and only rotate the remainder.
+  i = i % len(slice)
+If len(slice) == 0 or i == 0
+  Nothing to do, so return
+If right
+  reverse slice[0 : len(slice) - 1]
+reverse slice[0 : i-1]
+reverse slice[i : len(slice) - 1]
+If not right
+  reverse slice[0 : len(slice) - 1]
+
+
+Implementation Notes:
+----------------------------------------------------------------------------------------------------
+Go provides a sort.Reverse function, however, it must be fed to sort.Sort and is used to indicate
+that the caller wants the given slice to be sorted in reverse order (ie. sort.Reverse returns
+&reverse{data}, and the 'reverse' is a type which embeds the original interface, but redefines the
+Less method).  The original thought was to use this, but that would also sort the slice, which is
+not wanted.
+
+
+Run/Test:
+----------------------------------------------------------------------------------------------------
+# Build
+cd rotate && go clean && go build
+# Help
+./rotate -h
+# Example: rotate "abcdefgh" 3 positions left forming "defghabc"
+./rotate -rot 3 "abcdefgh"

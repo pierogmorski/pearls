@@ -1,0 +1,38 @@
+Problem Statement:
+----------------------------------------------------------------------------------------------------
+Input:  A sequential file that contains at most four billion 32-bit integers in random order.
+
+Output:  A 32-bit integer that isn't in the file.  In fact, let's generate a list of all 32-bit
+         integers that are not in the file.
+
+Constraints:  Memory is plentiful in this case.
+
+There must be at least one because we have a upper bound of 4,000,000,000 integers, while the
+possible number of 32-bit integers ranges from 0 to 2^32 - 1 (ie. 0 to 4,294,967,295).
+
+The solution would be to use the bit vector implementation from Column 1 to load the numbers from
+file.  Then:
+  for i = [0, MaxUint]
+    if vec.TestBit(i) == 0
+      return i // returns the first 0 bit position representing a missing number
+
+Recall that TestBit does something like:
+  vectorIndex = bitNum / sizeof(Uint)
+  bitToTest = bitNum - vectorIndex * sizeof(Uint)
+  return vector[vectorIndex] & (1 << bitToTest)
+
+Data:
+----------------------------------------------------------------------------------------------------
+
+
+Functions/Methods:
+----------------------------------------------------------------------------------------------------
+
+
+Implementation Notes:
+----------------------------------------------------------------------------------------------------
+
+
+Run/Test:
+----------------------------------------------------------------------------------------------------
+

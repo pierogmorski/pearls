@@ -1,0 +1,85 @@
+Problem Statement:
+----------------------------------------------------------------------------------------------------
+Input:  A dictionary (file) of English words; one word per line.
+Output:  All file containing all sets of anagrams; one set per line.
+Constraints:  Memory is plentiful.  The 20th edition of the Oxford English dictionary contains
+              171,476 words in current use.  Further, a quick search yields ~5 letters per word.
+              Thus, we're looking at (rounding up) about 1MB.
+              Looking at /usr/share/dict/words, it contains 235,970 words (one per line), and is
+              2.4MB.
+
+I'll admit that I peaked at the hints for this problem.  The solution proposes adding a 'key' to
+each word (ie. for the word tops: "opst tops", for the word pots: "opst pots", and so one).  The
+suggested key is the word sorted by letter.  The beauty here is that each anagram becomes obvious,
+as they will share the same key!
+
+
+Data:
+----------------------------------------------------------------------------------------------------
+words:  A list of words read in from file.  The words will likely already be sorted, but this is not
+        a prerequisite.  Note that some words will start with capital letters.
+
+keyedWords:  A hash of strings to lists of strings.  Keys will be the lowercase and sorted (by
+             letter) words from the words list (ie. anagram keys).  Values will be lists of words
+             that contain all of the letters in the anagram key (ie. anagram sets).
+
+runes:  A slice/list of runes used to sort (by letter) a word in order to generate an anagram key.
+
+
+Functions/Methods:
+----------------------------------------------------------------------------------------------------
+main()
+Get a dictionary filename from CLI.
+Get an output filename from CLI.
+
+Open dictionary file, read words (one per line) and populate 'words' list.
+If error reading file.
+  Log an error and exit.
+
+For each word in 'words' list.
+  anagramKey = genAnagramKey(word)
+  Key 'keyedWords' by anagramKey, and append original word to value list.
+
+Free 'words' list.
+
+Sort keys of 'keyedWords', appending to 'keys' list.
+Open output file.
+  If error creating/opening file.
+    Log error and exit.
+
+For each key in 'keys' list
+  Output list of words (anagram set) to output file.
+  Output newline.
+  If error writing to file.
+    Log error and exit.
+
+
+Len method returns the length of the runes list.
+runes.Len() -> int
+  return len(runes)
+
+
+Less method compares two runes lexicographically.
+runes.Less(i, j) -> boolean
+  return i < j
+
+
+Swap method swaps two runes.
+runes.Swap(i, j) -> swapped runes
+  runes[i], runes[j] = runes[j], runes[i]
+
+
+genAnagramKey takes a word, and returns the word converted to lowercase and sorted by letter.
+genAnagramKey(word) -> anagram key
+  Convert word to lowercase.
+  Convert word to rune slice.
+  Sort rune slice and join result to form anagram key.
+  Return anagram key
+
+
+Implementation Notes:
+----------------------------------------------------------------------------------------------------
+
+
+Run/Test:
+----------------------------------------------------------------------------------------------------
